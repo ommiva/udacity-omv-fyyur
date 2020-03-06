@@ -25,6 +25,7 @@ db = SQLAlchemy(app)
 
 # TODO: connect to a local postgresql database
 
+
 #----------------------------------------------------------------------------#
 # Models.
 #----------------------------------------------------------------------------#
@@ -42,6 +43,10 @@ class Venue(db.Model):
     facebook_link = db.Column(db.String(120))
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
+
+    def __repr__(self):
+      return f'<Venue {self.id} {self.name} >'
+      
 
 class Artist(db.Model):
     __tablename__ = 'Artist'
