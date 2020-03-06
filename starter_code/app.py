@@ -42,11 +42,12 @@ class Venue(db.Model):
     phone = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
+    genres = db.relationship('VenueGenres', backref='Venue', lazy=True)
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
     def __repr__(self):
-      return f'<Venue {self.id} {self.name} >'
+      return f'<Venue {self.id} "{self.name}" >'
 
 
 class Artist(db.Model):
@@ -64,6 +65,17 @@ class Artist(db.Model):
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
 # TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
+
+
+class VenueGenres(db.Model):
+  __tablename__ = "Venue_Genres"
+
+  id = db.Column(db.Integer, primary_key=True)
+  genre = db.Column(db.String(120))
+  venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id'), nullable=False)
+
+  def __repr__(self):
+    return f'<VenueGenre {self.id} {self.name} venue:{self.venue_id}>'
 
 #----------------------------------------------------------------------------#
 # Filters.
@@ -228,12 +240,32 @@ def create_venue_form():
 @app.route('/venues/create', methods=['POST'])
 def create_venue_submission():
   # TODO: insert form data as a new Venue record in the db, instead
-  # TODO: modify data to be the data object returned from db insertion
-  form = VenueForm()
+  #  modify data to be the data object returned from db insertion
+  
+  form = VenueForm(request.form)
 
   venue = Venue()
-  form.populate_obj(venue)
+  
+  #form.populate_obj(venue)
+  venue.name = request.form["name"]
+  venue.city = request.form["city"]
+  venue.address = request.form["address"]
+  venue.state = request.form["state"]
+  venue.phone = request.form["phone"]
+  #venue.image_link = request.form["image_link"]
+  venue.facebook_link = request.form["facebook_link"]
+  
+  formGenres = request.form.getlist("genres")
+  for genre in formGenres:
+    venueGenre = VenueGenres()
+    venueGenre.genre = genre
+    venueGenre.Venue = venue
 
+  print("Venue ", venue)
+  print("Forma ", form )
+  print("Request (tam)", len(request.form.getlist("genres")) )
+  print("Request ", request.form) 
+  
   try:
     db.session.add(venue)
     db.session.commit()
@@ -244,10 +276,10 @@ def create_venue_submission():
     flash('An error occurred. Venue ' + venue.name + ' could not be listed.')
   finally: 
     db.session.close()
-
+  
   # on successful db insert, flash success
   #flash('Venue ' + request.form['name'] + ' was successfully listed!')
-  # TODO: on unsuccessful db insert, flash an error instead.
+  #  on unsuccessful db insert, flash an error instead.
   # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
   # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
   return render_template('pages/home.html')
