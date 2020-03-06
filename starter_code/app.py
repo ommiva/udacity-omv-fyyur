@@ -47,7 +47,7 @@ class Venue(db.Model):
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
     def __repr__(self):
-      return f'<Venue {self.id} "{self.name}" >'
+      return f'<Venue {self.id} "{self.name}" [c: {self.city} s:{self.state}]>'
 
 
 class Artist(db.Model):
@@ -105,8 +105,10 @@ def index():
 
 @app.route('/venues')
 def venues():
-  # TODO: replace with real venues data.
-  #       num_shows should be aggregated based on number of upcoming shows per venue.
+  # replace with real venues data.
+  # TODO:      num_shows should be aggregated based on number of upcoming shows per venue.
+  """
+  # DUMMY
   data=[{
     "city": "San Francisco",
     "state": "CA",
@@ -128,7 +130,59 @@ def venues():
       "num_upcoming_shows": 0,
     }]
   }]
-  return render_template('pages/venues.html', areas=data);
+  """
+
+  states = Venue.query.distinct(Venue.state).all()
+
+  print("========")
+  print("Estados -------------")
+  print(states)
+  print("")
+
+  data2 = []
+
+  for currentState in states:
+    content = {}
+    content["state"] = currentState.state
+    cities = Venue.query\
+      .filter(Venue.state == currentState.state)\
+      .distinct(Venue.city)\
+      .all()
+
+    print("Ciudades ------------- ", currentState.state, " [" ,len(cities), "]")
+    print(cities)
+    for currentCity in cities:
+      localVenues = []
+      content["city"] = currentCity.city
+      venues = Venue.query\
+        .filter(Venue.state == currentState.state)\
+        .filter(Venue.city == currentCity.city)\
+        .all()
+      
+      print("Localidad ------------- ", currentCity.city, " ", currentCity.state, " [" ,len(venues), "]") 
+      print(venues)
+      
+      for currentVenue in venues:
+        dataVenue = {}
+        dataVenue["id"] = currentVenue.id
+        dataVenue["name"] = currentVenue.name
+        dataVenue["num_upcoming_shows"] = 0
+        localVenues.append(dataVenue)
+        print(" >>> venue agregado")
+
+      content["venues"] = localVenues
+      print("<<<<<< <<<<< <<<<< <<<<< <<<<")
+      print("<<<<<< <<<<< <<<<< <<<<< <<<<")
+
+    data2.append(content)
+    print("  >> estado, ciudad agregado | localidades [", len(content["venues"]), "]")
+  
+  print('Data *****  [', len(data2), "]" )
+  print(data2)
+
+
+  return render_template('pages/venues.html', areas=data2);
+
 
 @app.route('/venues/search', methods=['POST'])
 def search_venues():
