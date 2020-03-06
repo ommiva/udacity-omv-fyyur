@@ -23,7 +23,7 @@ moment = Moment(app)
 app.config.from_object('config')
 db = SQLAlchemy(app)
 
-# TODO: connect to a local postgresql database
+#  connect to a local postgresql database
 migrate = Migrate(app, db)
 
 
@@ -63,6 +63,9 @@ class Artist(db.Model):
     facebook_link = db.Column(db.String(120))
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
+
+    def __repr__(self):
+      return f'<Artist {self.id} "{self.name}">'
 
 # TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
 
@@ -301,6 +304,10 @@ def create_venue_submission():
   # TODO: insert form data as a new Venue record in the db, instead
   #  modify data to be the data object returned from db insertion
   
+
+  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  # TODO: validación de forma aún pendiente
+  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   form = VenueForm(request.form)
 
   venue = Venue()
@@ -322,7 +329,7 @@ def create_venue_submission():
 
   print("Venue ", venue)
   print("Forma ", form )
-  print("Request (tam)", len(request.form.getlist("genres")) )
+  print("Generos (tam)", len(request.form.getlist("genres")) )
   print("Request ", request.form) 
   
   try:
@@ -351,6 +358,7 @@ def delete_venue(venue_id):
   # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
   # clicking that button delete it from the db then redirect the user to the homepage
   return None
+
 
 #  Artists
 #  ----------------------------------------------------------------
@@ -527,12 +535,43 @@ def create_artist_form():
 @app.route('/artists/create', methods=['POST'])
 def create_artist_submission():
   # called upon submitting the new artist listing form
-  # TODO: insert form data as a new Venue record in the db, instead
-  # TODO: modify data to be the data object returned from db insertion
+  # insert form data as a new Venue record in the db, instead
+  # modify data to be the data object returned from db insertion
+
+  form = ArtistForm(request.form)
+   
+  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  # TODO: validación de forma pendiente
+  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  if request.method == 'POST':# and form.validate():
+    artist = Artist()
+    form.populate_obj(artist)
+    
+    print("Artist ", artist)
+    print("Forma ", form )
+    print("Generos (tam)", len(request.form.getlist("genres")) )
+    print("Request ", request.form) 
+
+    
+    try:
+      db.session.add(artist)
+      db.session.commit()
+
+      flash('Artist ' + artist.name + ' was successfully listed!')
+      print('Artista creado')
+    except: 
+      db.session.rollback()
+      flash('An error occurred. Artist ' + artist.name + ' could not be listed.')
+      print('Error: Artista no creado')
+    finally: 
+      db.session.close()
+    
+  else:
+    print('Errror: forma no válida')
 
   # on successful db insert, flash success
-  flash('Artist ' + request.form['name'] + ' was successfully listed!')
-  # TODO: on unsuccessful db insert, flash an error instead.
+  # flash('Artist ' + request.form['name'] + ' was successfully listed!')
+  # on unsuccessful db insert, flash an error instead.
   # e.g., flash('An error occurred. Artist ' + data.name + ' could not be listed.')
   return render_template('pages/home.html')
 
