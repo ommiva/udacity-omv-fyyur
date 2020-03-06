@@ -132,7 +132,10 @@ def venues():
   }]
   """
 
-  states = Venue.query.distinct(Venue.state).all()
+  states = Venue.query\
+    .distinct(Venue.state)\
+    .order_by(Venue.state)\
+    .all()
 
   print("========")
   print("Estados -------------")
@@ -147,6 +150,7 @@ def venues():
     cities = Venue.query\
       .filter(Venue.state == currentState.state)\
       .distinct(Venue.city)\
+      .order_by(Venue.city)\
       .all()
 
     print("Ciudades ------------- ", currentState.state, " [" ,len(cities), "]")
@@ -157,6 +161,7 @@ def venues():
       venues = Venue.query\
         .filter(Venue.state == currentState.state)\
         .filter(Venue.city == currentCity.city)\
+        .order_by(Venue.id)\
         .all()
       
       print("Localidad ------------- ", currentCity.city, " ", currentCity.state, " [" ,len(venues), "]") 
