@@ -364,7 +364,8 @@ def delete_venue(venue_id):
 #  ----------------------------------------------------------------
 @app.route('/artists')
 def artists():
-  # TODO: replace with real data returned from querying the database
+  #  replace with real data returned from querying the database
+  """
   data=[{
     "id": 4,
     "name": "Guns N Petals",
@@ -375,6 +376,28 @@ def artists():
     "id": 6,
     "name": "The Wild Sax Band",
   }]
+  """
+  
+  """
+  # ###################################
+  # IMPORTANTE! Con efecto secundario
+  # Agrega un nuevo artista con cada consulta a /artists
+  # (cada vez que pasa por aquí)
+  # ###################################
+  #data = Artist.query.all()
+  """
+  data = []
+  artists = Artist.query.all()
+
+  for artist in artists:
+    content = {}
+    content["id"] = artist.id
+    content["name"] = artist.name
+    data.append(content)
+
+
+  print("Data [", len(data), "] ", data)
+
   return render_template('pages/artists.html', artists=data)
 
 @app.route('/artists/search', methods=['POST'])
@@ -544,6 +567,17 @@ def create_artist_submission():
   # TODO: validación de forma pendiente
   # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   if request.method == 'POST':# and form.validate():
+    """
+    artist = Artist(
+      name=request.form["name"],
+      city=request.form["city"],
+      state=request.form["state"],
+      phone=request.form["phone"],
+      genres=request.form["genres"],
+      #image_link=request.form["name"],
+      facebook_link=request.form["facebook_link"]
+    )
+    """
     artist = Artist()
     form.populate_obj(artist)
     
