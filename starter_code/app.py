@@ -419,6 +419,7 @@ def search_artists():
 def show_artist(artist_id):
   # shows the venue page with the given venue_id
   # TODO: replace with real venue data from the venues table, using venue_id
+  """
   data1={
     "id": 4,
     "name": "Guns N Petals",
@@ -491,6 +492,25 @@ def show_artist(artist_id):
     "upcoming_shows_count": 3,
   }
   data = list(filter(lambda d: d['id'] == artist_id, [data1, data2, data3]))[0]
+  """
+
+  artist = Artist.query.get(artist_id)
+  data = {}
+  data["id"] = artist.id
+  data["name"] = artist.name
+  data["city"] = artist.city
+  data["state"] = artist.state
+  data["phone"] = artist.phone
+  data["genres"] = artist.genres
+  data["image_link"] = artist.image_link
+  data["facebook_link"] = artist.facebook_link
+  # TODO: implementar
+  data["past_shows"] = []
+  data["upcoming_shows"] = []
+  data["past_shows_count"] = 0
+  data["upcoming_shows_count"] = 0
+
+
   return render_template('pages/show_artist.html', artist=data)
 
 #  Update
