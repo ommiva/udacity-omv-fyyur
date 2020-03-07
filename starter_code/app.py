@@ -211,6 +211,7 @@ def search_venues():
 def show_venue(venue_id):
   # shows the venue page with the given venue_id
   # TODO: replace with real venue data from the venues table, using venue_id
+  """
   data1={
     "id": 1,
     "name": "The Musical Hop",
@@ -289,6 +290,35 @@ def show_venue(venue_id):
     "upcoming_shows_count": 1,
   }
   data = list(filter(lambda d: d['id'] == venue_id, [data1, data2, data3]))[0]
+  """
+
+  venue = Venue.query.get(venue_id)
+  
+  data = {}
+  genres = []
+  for g in venue.genres:
+    genres.append(g.genre)
+
+  data["id"] = venue.id
+  data["name"] = venue.name
+  data["genres"] = genres
+  data["address"] = venue.address
+  data["city"] = venue.city
+  data["state"] = venue.state
+  data["phone"] = venue.phone
+  data["website"] = ""  # TODO: no está definido en clase venue, va en otro lado? [opcional]
+  data["image_link"] = venue.image_link
+  data["facebook_link"] = venue.facebook_link
+  data["seeking_talent"] = False # TODO: no está definido en clase venue, va en otro lado? [opcional]
+  data["seeking_description"] = "" # TODO: no está definido en clase venue, va en otro lado? [opcional]
+  # TODO: implementar
+  data["past_shows"] = []
+  data["upcoming_shows"] = []
+  data["past_shows_count"] = 0
+  data["upcoming_shows_count"] = 0
+
+
+
   return render_template('pages/show_venue.html', venue=data)
 
 #  Create Venue
@@ -495,15 +525,19 @@ def show_artist(artist_id):
   """
 
   artist = Artist.query.get(artist_id)
+
   data = {}
   data["id"] = artist.id
   data["name"] = artist.name
   data["city"] = artist.city
   data["state"] = artist.state
   data["phone"] = artist.phone
-  data["genres"] = artist.genres
-  data["image_link"] = artist.image_link
+  data["website"] = "" # TODO: no está definido en clase artist, va en otro lado? [campo opcional]
+  data["genres"] = [artist.genres[1:-1]]
   data["facebook_link"] = artist.facebook_link
+  data["seeking_venue"] = False # TODO: no está definido en clase artist, va en otro lado? [campo opcional]
+  data["seeking_description"] = "" # TODO: no está definido en clase artist, va en otro lado? [campo opcional]
+  data["image_link"] = artist.image_link
   # TODO: implementar
   data["past_shows"] = []
   data["upcoming_shows"] = []
