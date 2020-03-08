@@ -58,7 +58,7 @@ class Artist(db.Model):
     city = db.Column(db.String(120))
     state = db.Column(db.String(120))
     phone = db.Column(db.String(120))
-    genres = db.Column(db.String(120))
+    genres = db.relationship('ArtistGenres', backref='Artist', cascade='all, delete-orphan', lazy=True)
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
 
@@ -79,6 +79,18 @@ class VenueGenres(db.Model):
 
   def __repr__(self):
     return f'<VenueGenre {self.id} {self.name} venue:{self.venue_id}>'
+
+
+class ArtistGenres(db.Model):
+  __tablename__ = "Artist_Genres"
+
+  id = db.Column(db.Integer, primary_key=True)
+  genre = db.Column(db.String(120))
+  venue_id = db.Column(db.Integer, db.ForeignKey('Artist.id'), nullable=False)
+
+  def __repr__(self):
+    return f'<ArtistGenre {self.id} {self.name} venue:{self.venue_id}>'
+
 
 #----------------------------------------------------------------------------#
 # Filters.
@@ -210,7 +222,7 @@ def search_venues():
 @app.route('/venues/<int:venue_id>')
 def show_venue(venue_id):
   # shows the venue page with the given venue_id
-  # TODO: replace with real venue data from the venues table, using venue_id
+  # replace with real venue data from the venues table, using venue_id
   """
   data1={
     "id": 1,
@@ -448,7 +460,7 @@ def search_artists():
 @app.route('/artists/<int:artist_id>')
 def show_artist(artist_id):
   # shows the venue page with the given venue_id
-  # TODO: replace with real venue data from the venues table, using venue_id
+  # replace with real venue data from the venues table, using venue_id
   """
   data1={
     "id": 4,
@@ -527,13 +539,17 @@ def show_artist(artist_id):
   artist = Artist.query.get(artist_id)
 
   data = {}
+  genres = []
+  for g in artist.genres:
+    genres.append(g.genre)
+
   data["id"] = artist.id
   data["name"] = artist.name
   data["city"] = artist.city
   data["state"] = artist.state
   data["phone"] = artist.phone
   data["website"] = "" # TODO: no está definido en clase artist, va en otro lado? [campo opcional]
-  data["genres"] = [artist.genres[1:-1]]
+  data["genres"] = genres #[artist.genres[1:-1]]
   data["facebook_link"] = artist.facebook_link
   data["seeking_venue"] = False # TODO: no está definido en clase artist, va en otro lado? [campo opcional]
   data["seeking_description"] = "" # TODO: no está definido en clase artist, va en otro lado? [campo opcional]
@@ -621,19 +637,25 @@ def create_artist_submission():
   # TODO: validación de forma pendiente
   # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   if request.method == 'POST':# and form.validate():
-    """
+    
     artist = Artist(
       name=request.form["name"],
       city=request.form["city"],
       state=request.form["state"],
       phone=request.form["phone"],
-      genres=request.form["genres"],
+      #genres=request.form["genres"],
       #image_link=request.form["name"],
       facebook_link=request.form["facebook_link"]
     )
-    """
-    artist = Artist()
-    form.populate_obj(artist)
+
+    formGenres = request.form.getlist("genres")
+    for genre in formGenres:
+      artistGenre = ArtistGenres()
+      artistGenre.genre = genre
+      artistGenre.Artist = artist
+    
+    #artist = Artist()
+    #form.populate_obj(artist)
     
     print("Artist ", artist)
     print("Forma ", form )
