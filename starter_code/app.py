@@ -162,8 +162,6 @@ def venues():
   data2 = []
 
   for currentState in states:
-    content = {}
-    content["state"] = currentState.state
     cities = Venue.query\
       .filter(Venue.state == currentState.state)\
       .distinct(Venue.city)\
@@ -174,7 +172,10 @@ def venues():
     print(cities)
     for currentCity in cities:
       localVenues = []
+      content = {}
+      content["state"] = currentState.state
       content["city"] = currentCity.city
+      content["venues"] = None
       venues = Venue.query\
         .filter(Venue.state == currentState.state)\
         .filter(Venue.city == currentCity.city)\
@@ -196,7 +197,7 @@ def venues():
       print("<<<<<< <<<<< <<<<< <<<<< <<<<")
       print("<<<<<< <<<<< <<<<< <<<<< <<<<")
 
-    data2.append(content)
+      data2.append(content)
     print("  >> estado, ciudad agregado | localidades [", len(content["venues"]), "]")
   
   print('Data *****  [', len(data2), "]" )
