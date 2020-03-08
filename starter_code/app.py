@@ -40,6 +40,7 @@ class Venue(db.Model):
     state = db.Column(db.String(120))
     address = db.Column(db.String(120))
     phone = db.Column(db.String(120))
+    website = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
     genres = db.relationship('VenueGenres', backref='Venue', cascade='all, delete-orphan', lazy=True)
@@ -58,6 +59,7 @@ class Artist(db.Model):
     city = db.Column(db.String(120))
     state = db.Column(db.String(120))
     phone = db.Column(db.String(120))
+    website = db.Column(db.String(120))
     genres = db.relationship('ArtistGenres', backref='Artist', cascade='all, delete-orphan', lazy=True)
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
@@ -351,39 +353,43 @@ def create_venue_submission():
   # TODO: validación de forma aún pendiente
   # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   form = VenueForm(request.form)
+  if request.method == 'POST' and form.validate():
 
-  venue = Venue()
-  
-  #form.populate_obj(venue)
-  venue.name = request.form["name"]
-  venue.city = request.form["city"]
-  venue.address = request.form["address"]
-  venue.state = request.form["state"]
-  venue.phone = request.form["phone"]
-  #venue.image_link = request.form["image_link"]
-  venue.facebook_link = request.form["facebook_link"]
-  
-  formGenres = request.form.getlist("genres")
-  for genre in formGenres:
-    venueGenre = VenueGenres()
-    venueGenre.genre = genre
-    venueGenre.Venue = venue
+    venue = Venue()
+    
+    #form.populate_obj(venue)
+    venue.name = request.form["name"]
+    venue.city = request.form["city"]
+    venue.address = request.form["address"]
+    venue.state = request.form["state"]
+    venue.phone = request.form["phone"]
+    #venue.image_link = request.form["image_link"]
+    venue.facebook_link = request.form["facebook_link"]
+    
+    formGenres = request.form.getlist("genres")
+    for genre in formGenres:
+      venueGenre = VenueGenres()
+      venueGenre.genre = genre
+      venueGenre.Venue = venue
 
-  print("Venue ", venue)
-  print("Forma ", form )
-  print("Generos (tam)", len(request.form.getlist("genres")) )
-  print("Request ", request.form) 
-  
-  try:
-    db.session.add(venue)
-    db.session.commit()
+    print("Venue ", venue)
+    print("Forma ", form )
+    print("Generos (tam)", len(request.form.getlist("genres")) )
+    print("Request ", request.form) 
+    
+    try:
+      db.session.add(venue)
+      db.session.commit()
 
-    flash('Venue ' + venue.name + ' was successfully listed!')
-  except: 
-    db.session.rollback()
-    flash('An error occurred. Venue ' + venue.name + ' could not be listed.')
-  finally: 
-    db.session.close()
+      flash('Venue ' + venue.name + ' was successfully listed!')
+    except: 
+      db.session.rollback()
+      flash('An error occurred. Venue ' + venue.name + ' could not be listed.')
+    finally: 
+      db.session.close()
+  else:
+    flash('An error occurred. Venue ' + request.form["name"] + ' failed (validation error).')
+    print('Errror: forma no válida')
   
   # on successful db insert, flash success
   #flash('Venue ' + request.form['name'] + ' was successfully listed!')
@@ -636,7 +642,7 @@ def create_artist_submission():
   # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   # TODO: validación de forma pendiente
   # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  if request.method == 'POST':# and form.validate():
+  if request.method == 'POST' and form.validate_on_submit():# and form.validate():
     
     artist = Artist(
       name=request.form["name"],
@@ -677,6 +683,7 @@ def create_artist_submission():
       db.session.close()
     
   else:
+    flash('An error occurred. Artist ' + request.form["name"] + ' failed (validation error).')
     print('Errror: forma no válida')
 
   # on successful db insert, flash success
