@@ -44,8 +44,11 @@ class Venue(db.Model):
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
     genres = db.relationship('VenueGenres', backref='Venue', cascade='all, delete-orphan', lazy=True)
-
+    
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
+    # back_popultes Show.venue
+    artists = db.relationship("Show", back_populates="venue")
+
 
     def __repr__(self):
       return f'<Venue {self.id} "{self.name}" [c: {self.city} s:{self.state}]>'
@@ -65,11 +68,27 @@ class Artist(db.Model):
     facebook_link = db.Column(db.String(120))
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
+    # back_popultes Show.artist
+    venues = db.relationship("Show", back_populates="artist")
 
     def __repr__(self):
       return f'<Artist {self.id} "{self.name}">'
 
 # TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
+
+
+class Show(db.Model):
+  __tablename__ = "Show"
+
+  venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id'), primary_key=True)
+  artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id'), primary_key=True)
+
+  start_time = db.Column(db.DateTime(), primary_key=True)
+  artist = db.relationship("Artist", back_populates="venues")
+  venue = db.relationship("Venue", back_populates="artists")
+  
+  def __repr__(self):
+    return f'<Show {self.id} {self.start_time} [v:{self.venue_id} a:{artist_id}]>'
 
 
 class VenueGenres(db.Model):
@@ -749,11 +768,43 @@ def create_shows():
 @app.route('/shows/create', methods=['POST'])
 def create_show_submission():
   # called to create new shows in the db, upon submitting new show listing form
-  # TODO: insert form data as a new Show record in the db, instead
+  # insert form data as a new Show record in the db, instead
+
+  form = ShowForm(request.form)
+
+  if request.method == 'POST' and form.validate():
+    venue_id = request.form['venue_id']
+    artist_id = request.form['artist_id']
+    start_time = request.form['start_time']
+
+    selected_venue = Venue.query.get(venue_id)
+    selected_artist = Artist.query.get(artist_id)
+
+    show = Show(start_time=start_time)
+    show.artist = selected_artist
+    show.venue = selected_venue
+    selected_venue.artists.append(show)
+    selected_artist.venues.append(show)
+
+    
+    try:
+      db.session.add(selected_venue)
+      db.session.commit()
+
+      flash('Show ' + start_time + ' was successfully listed!')
+      print('Show creado')
+    except: 
+      db.session.rollback()
+      flash('An error occurred. Show ' + start_time + ' could not be listed.')
+      print('Error: Show no creado')
+      print(sys.exc_info())
+    finally: 
+      db.session.close()
+    
 
   # on successful db insert, flash success
-  flash('Show was successfully listed!')
-  # TODO: on unsuccessful db insert, flash an error instead.
+  #flash('Show was successfully listed!')
+  # on unsuccessful db insert, flash an error instead.
   # e.g., flash('An error occurred. Show could not be listed.')
   # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
   return render_template('pages/home.html')
