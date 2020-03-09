@@ -636,6 +636,7 @@ def show_artist(artist_id):
 #  ----------------------------------------------------------------
 @app.route('/artists/<int:artist_id>/edit', methods=['GET'])
 def edit_artist(artist_id):
+  """
   form = ArtistForm()
   artist={
     "id": 4,
@@ -650,7 +651,44 @@ def edit_artist(artist_id):
     "seeking_description": "Looking for shows to perform at in the San Francisco Bay Area!",
     "image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80"
   }
-  # TODO: populate form with fields from artist with ID <artist_id>
+  """
+  # populate form with fields from artist with ID <artist_id>
+  toUpdate = Artist.query.get(artist_id)
+  print("Editar artista ", toUpdate )
+
+  genres = []
+  for g in toUpdate.genres:
+    genres.append(g.genre)
+
+  artist={
+    "id": toUpdate.id,
+    "name": toUpdate.name,
+    "genres": genres,
+    "city": toUpdate.city,
+    "state": toUpdate.state,
+    "phone": toUpdate.phone,
+    "website": toUpdate.website,
+    "facebook_link": toUpdate.facebook_link,
+    "seeking_talent": False, # TODO: implementar
+    "seeking_description": "", # TODO: implementar
+    "image_link": toUpdate.image_link
+  }
+
+  form = ArtistForm()
+  form.name.data = artist["name"]
+  form.genres.data = genres  # TODO: revisar
+  form.city.data = artist["city"]
+  form.state.data = artist["state"]
+  form.phone.data = artist["phone"]
+  form.website.data = artist["website"]
+  form.facebook_link.data = artist["facebook_link"]
+  form.image_link.data = artist["image_link"]
+  #form.seeking_talent.data = artist["seeking_talent"]
+  #form.seeking_description.data = artist["seeking_description"]
+
+  print("Forma ", form)
+  print("Artista ", artist)
+
   return render_template('forms/edit_artist.html', form=form, artist=artist)
 
 @app.route('/artists/<int:artist_id>/edit', methods=['POST'])
@@ -662,6 +700,7 @@ def edit_artist_submission(artist_id):
 
 @app.route('/venues/<int:venue_id>/edit', methods=['GET'])
 def edit_venue(venue_id):
+  """
   form = VenueForm()
   venue={
     "id": 1,
@@ -677,7 +716,46 @@ def edit_venue(venue_id):
     "seeking_description": "We are on the lookout for a local artist to play every two weeks. Please call us.",
     "image_link": "https://images.unsplash.com/photo-1543900694-133f37abaaa5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60"
   }
-  # TODO: populate form with values from venue with ID <venue_id>
+  """
+  # populate form with values from venue with ID <venue_id>
+  toUpdate = Venue.query.get(venue_id)
+  print("Editar localidad ", toUpdate )
+
+  genres = []
+  for g in toUpdate.genres:
+    genres.append(g.genre)
+
+  venue={
+    "id": toUpdate.id,
+    "name": toUpdate.name,
+    "genres": genres,
+    "address": toUpdate.address,
+    "city": toUpdate.city,
+    "state": toUpdate.state,
+    "phone": toUpdate.phone,
+    "website": toUpdate.website,
+    "facebook_link": toUpdate.facebook_link,
+    "seeking_talent": False, # TODO: implementar
+    "seeking_description": "", # TODO: implementar
+    "image_link": toUpdate.image_link
+  }
+
+  form = VenueForm()
+  form.name.data = venue["name"]
+  form.genres.data = genres  # TODO: revisar
+  form.address.data = venue["address"]
+  form.city.data = venue["city"]
+  form.state.data = venue["state"]
+  form.phone.data = venue["phone"]
+  #form.website.data = venue["website"]  
+  form.facebook_link.data = venue["facebook_link"]
+  form.image_link.data = venue["image_link"]
+  #form.seeking_talent.data = venue["seeking_talent"]
+  #form.seeking_description.data = venue["seeking_description"]
+
+  print("Forma ", form)
+  print("Localidad ", venue)
+
   return render_template('forms/edit_venue.html', form=form, venue=venue)
 
 @app.route('/venues/<int:venue_id>/edit', methods=['POST'])
