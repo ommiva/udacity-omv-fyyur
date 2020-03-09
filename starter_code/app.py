@@ -9,6 +9,7 @@ from flask import Flask, render_template, request, Response, flash, redirect, ur
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from sqlalchemy import func
 import logging
 from logging import Formatter, FileHandler
 from flask_wtf import Form
@@ -229,9 +230,10 @@ def venues():
 
 @app.route('/venues/search', methods=['POST'])
 def search_venues():
-  # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
+  # implement search on artists with partial string search. Ensure it is case-insensitive.
   # seach for Hop should return "The Musical Hop".
   # search for "Music" should return "The Musical Hop" and "Park Square Live Music & Coffee"
+  """
   response={
     "count": 1,
     "data": [{
@@ -240,6 +242,26 @@ def search_venues():
       "num_upcoming_shows": 0,
     }]
   }
+  """
+
+  response = {}
+
+  search_item = request.form["search_term"].strip().lower()
+  search_item = "%{}%".format(search_item)
+  venues = Venue.query.filter(func.lower(Venue.name).like(search_item)).all()
+  print("Localidades encontradas para '", search_item, "'")
+  print(venues)
+
+  response["count"] = len(venues)
+  data = []
+  for venue in venues:
+    content = {}
+    content["id"] = venue.id
+    content["name"] = venue.name
+    content["num_upcoming_shows"] = 0 # TODO: implementar
+    data.append(content)
+  response["data"] = data
+
   return render_template('pages/search_venues.html', results=response, search_term=request.form.get('search_term', ''))
 
 @app.route('/venues/<int:venue_id>')
@@ -471,9 +493,10 @@ def artists():
 
 @app.route('/artists/search', methods=['POST'])
 def search_artists():
-  # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
+  # implement search on artists with partial string search. Ensure it is case-insensitive.
   # seach for "A" should return "Guns N Petals", "Matt Quevado", and "The Wild Sax Band".
   # search for "band" should return "The Wild Sax Band".
+  """
   response={
     "count": 1,
     "data": [{
@@ -482,6 +505,25 @@ def search_artists():
       "num_upcoming_shows": 0,
     }]
   }
+  """
+
+  response = {}
+
+  search_item = request.form["search_term"].strip().lower()
+  search_item = "%{}%".format(search_item)
+  artists = Artist.query.filter(func.lower(Artist.name).like(search_item)).all()
+  print("Aritstas encontrados para '", search_item, "'")
+  print(artists)
+
+  response["count"] = len(artists)
+  data = []
+  for artist in artists:
+    content = {}
+    content["id"] = artist.id
+    content["name"] = artist.name
+    content["num_upcoming_shows"] = 0 # TODO: implementar
+    data.append(content)
+  response["data"] = data
   return render_template('pages/search_artists.html', results=response, search_term=request.form.get('search_term', ''))
 
 @app.route('/artists/<int:artist_id>')
