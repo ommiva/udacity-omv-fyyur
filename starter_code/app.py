@@ -146,7 +146,7 @@ def index():
 @app.route('/venues')
 def venues():
   # replace with real venues data.
-  # TODO:      num_shows should be aggregated based on number of upcoming shows per venue.
+  # num_shows should be aggregated based on number of upcoming shows per venue.
   """
   # DUMMY
   data=[{
@@ -406,9 +406,8 @@ def show_venue(venue_id):
   data["past_shows_count"] = len(past_shows)
   data["upcoming_shows_count"] = len(upcoming_shows)
 
-
-
   return render_template('pages/show_venue.html', venue=data)
+
 
 #  Create Venue
 #  ----------------------------------------------------------------
@@ -420,13 +419,9 @@ def create_venue_form():
 
 @app.route('/venues/create', methods=['POST'])
 def create_venue_submission():
-  # TODO: insert form data as a new Venue record in the db, instead
+  # insert form data as a new Venue record in the db, instead
   #  modify data to be the data object returned from db insertion
   
-
-  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  # TODO: validación de forma aún pendiente
-  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   form = VenueForm(request.form)
   if request.method == 'POST' and form.validate():
 
@@ -477,6 +472,7 @@ def create_venue_submission():
   # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
   return render_template('pages/home.html')
 
+
 @app.route('/venues/<venue_id>', methods=['DELETE'])
 def delete_venue(venue_id):
   # TODO: Complete this endpoint for taking a venue_id, and using
@@ -522,7 +518,6 @@ def artists():
     content["name"] = artist.name
     data.append(content)
 
-
   print("Data [", len(data), "] ", data)
 
   return render_template('pages/artists.html', artists=data)
@@ -557,10 +552,17 @@ def search_artists():
     content = {}
     content["id"] = artist.id
     content["name"] = artist.name
-    content["num_upcoming_shows"] = 0 # TODO: implementar
+    content["num_upcoming_shows"] = \
+      Show.query.join(Venue).join(Artist)\
+        .filter(Show.venue_id == Venue.id)\
+        .filter(Show.artist_id == Artist.id)\
+        .filter(Show.artist_id == artist.id)\
+        .filter(Show.start_time >= datetime.now())\
+        .count() 
     data.append(content)
   response["data"] = data
   return render_template('pages/search_artists.html', results=response, search_term=request.form.get('search_term', ''))
+
 
 @app.route('/artists/<int:artist_id>')
 def show_artist(artist_id):
@@ -684,10 +686,10 @@ def show_artist(artist_id):
   data["past_shows_count"] = len(past_shows)
   data["upcoming_shows_count"] = len(upcoming_shows)
 
-
   print("Encontrado ", data) 
 
   return render_template('pages/show_artist.html', artist=data)
+
 
 #  Update
 #  ----------------------------------------------------------------
@@ -747,6 +749,7 @@ def edit_artist(artist_id):
   print("Artista ", artist)
 
   return render_template('forms/edit_artist.html', form=form, artist=artist)
+
 
 @app.route('/artists/<int:artist_id>/edit', methods=['POST'])
 def edit_artist_submission(artist_id):
@@ -862,11 +865,11 @@ def edit_venue(venue_id):
 
   return render_template('forms/edit_venue.html', form=form, venue=venue)
 
+
 @app.route('/venues/<int:venue_id>/edit', methods=['POST'])
 def edit_venue_submission(venue_id):
   # take values from the form submitted, and update existing
   # venue record with ID <venue_id> using the new attributes
-
 
   form = VenueForm(request.form)
   if request.method == 'POST' and form.validate_on_submit():
@@ -915,8 +918,8 @@ def edit_venue_submission(venue_id):
     flash('An error occurred. Localidad ' + request.form["name"] + ' failed (validation error).')
     print('Errror: forma no válida')
 
-
   return redirect(url_for('show_venue', venue_id=venue_id))
+
 
 #  Create Artist
 #  ----------------------------------------------------------------
@@ -926,6 +929,7 @@ def create_artist_form():
   form = ArtistForm()
   return render_template('forms/new_artist.html', form=form)
 
+
 @app.route('/artists/create', methods=['POST'])
 def create_artist_submission():
   # called upon submitting the new artist listing form
@@ -934,10 +938,7 @@ def create_artist_submission():
 
   form = ArtistForm(request.form)
    
-  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  # TODO: validación de forma pendiente
-  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  if request.method == 'POST' and form.validate_on_submit(): # and form.validate():
+  if request.method == 'POST' and form.validate_on_submit(): 
     
     artist = Artist(
       name=request.form["name"],
@@ -1054,15 +1055,15 @@ def shows():
 
     data.append(content)
 
-
-
   return render_template('pages/shows.html', shows=data)
+
 
 @app.route('/shows/create')
 def create_shows():
   # renders form. do not touch.
   form = ShowForm()
   return render_template('forms/new_show.html', form=form)
+
 
 @app.route('/shows/create', methods=['POST'])
 def create_show_submission():
@@ -1107,6 +1108,7 @@ def create_show_submission():
   # e.g., flash('An error occurred. Show could not be listed.')
   # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
   return render_template('pages/home.html')
+
 
 @app.errorhandler(404)
 def not_found_error(error):
