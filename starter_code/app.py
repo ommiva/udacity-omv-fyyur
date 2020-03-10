@@ -109,10 +109,10 @@ class ArtistGenres(db.Model):
 
   id = db.Column(db.Integer, primary_key=True)
   genre = db.Column(db.String(120))
-  venue_id = db.Column(db.Integer, db.ForeignKey('Artist.id'), nullable=False)
+  artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id'), nullable=False)
 
   def __repr__(self):
-    return f'<ArtistGenre {self.id} {self.name} venue:{self.venue_id}>'
+    return f'<ArtistGenre {self.id} {self.name} venue:{self.artist_id}>'
 
 
 #----------------------------------------------------------------------------#
@@ -413,6 +413,7 @@ def create_venue_submission():
     for genre in formGenres:
       venueGenre = VenueGenres()
       venueGenre.genre = genre
+      # Assign genre to venue
       venueGenre.Venue = venue
 
     print("Venue ", venue)
@@ -693,10 +694,54 @@ def edit_artist(artist_id):
 
 @app.route('/artists/<int:artist_id>/edit', methods=['POST'])
 def edit_artist_submission(artist_id):
-  # TODO: take values from the form submitted, and update existing
+  # take values from the form submitted, and update existing
   # artist record with ID <artist_id> using the new attributes
 
+  form = ArtistForm(request.form)
+  if request.method == 'POST' and form.validate_on_submit():
+
+    artist = Artist.query.get(artist_id)
+    ArtistGenres.query.filter_by(artist_id=artist_id).delete()
+
+    artist.name = request.form["name"]
+    artist.city = request.form["city"]
+    artist.state = request.form["state"]
+    artist.phone = request.form["phone"]
+    #artist.image_link = request.form["image_link"]
+    artist.facebook_link = request.form["facebook_link"]
+
+    formGenres = request.form.getlist("genres")
+    for genre in formGenres:
+      artistGenre = ArtistGenres()
+      artistGenre.genre = genre
+      # Assign genre to artist
+      artistGenre.Artist = artist
+
+    print("Artist ", artist)
+    print("Forma ", form )
+    print("Generos (tam)", len(request.form.getlist("genres")) )
+    print("Request ", request.form) 
+
+    
+    try:
+      db.session.commit()
+
+      flash('Artist ' + artist.name + ' was successfully updated!')
+      print('Artista editado')
+    except: 
+      db.session.rollback()
+      flash('An error occurred. Artist ' + artist.name + ' could not be updated.')
+      print('Error: Artista no editado')
+      print(sys.exc_info())
+    finally: 
+      db.session.close()
+    
+  else:
+    flash('An error occurred. Artist ' + request.form["name"] + ' failed (validation error).')
+    print('Errror: forma no válida')
+
   return redirect(url_for('show_artist', artist_id=artist_id))
+
 
 @app.route('/venues/<int:venue_id>/edit', methods=['GET'])
 def edit_venue(venue_id):
@@ -760,8 +805,55 @@ def edit_venue(venue_id):
 
 @app.route('/venues/<int:venue_id>/edit', methods=['POST'])
 def edit_venue_submission(venue_id):
-  # TODO: take values from the form submitted, and update existing
+  # take values from the form submitted, and update existing
   # venue record with ID <venue_id> using the new attributes
+
+
+  form = VenueForm(request.form)
+  if request.method == 'POST' and form.validate_on_submit():
+
+    venue = Venue.query.get(venue_id)
+    VenueGenres.query.filter_by(venue_id=venue_id).delete()
+
+    venue.name = request.form["name"]
+    venue.city = request.form["city"]
+    venue.state = request.form["state"]
+    venue.phone = request.form["phone"]
+    venue.address = request.form["address"]
+    #venue.image_link = request.form["image_link"]
+    venue.facebook_link = request.form["facebook_link"]
+
+    formGenres = request.form.getlist("genres")
+    for genre in formGenres:
+      venueGenre = VenueGenres()
+      venueGenre.genre = genre
+      # Assign genre to artist
+      venueGenre.Venue = venue
+
+    print("Venue ", venue)
+    print("Forma ", form )
+    print("Generos (tam)", len(request.form.getlist("genres")) )
+    print("Request ", request.form) 
+
+    
+    try:
+      db.session.commit()
+
+      flash('Venue ' + venue.name + ' was successfully updated!')
+      print('Localidad editado')
+    except: 
+      db.session.rollback()
+      flash('An error occurred. Venue ' + venue.name + ' could not be updated.')
+      print('Error: Localidad no editado')
+      print(sys.exc_info())
+    finally: 
+      db.session.close()
+    
+  else:
+    flash('An error occurred. Localidad ' + request.form["name"] + ' failed (validation error).')
+    print('Errror: forma no válida')
+
+
   return redirect(url_for('show_venue', venue_id=venue_id))
 
 #  Create Artist
@@ -783,7 +875,7 @@ def create_artist_submission():
   # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   # TODO: validación de forma pendiente
   # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  if request.method == 'POST' and form.validate_on_submit():# and form.validate():
+  if request.method == 'POST' and form.validate_on_submit(): # and form.validate():
     
     artist = Artist(
       name=request.form["name"],
@@ -799,6 +891,7 @@ def create_artist_submission():
     for genre in formGenres:
       artistGenre = ArtistGenres()
       artistGenre.genre = genre
+      # Assign genre to artist
       artistGenre.Artist = artist
     
     #artist = Artist()
