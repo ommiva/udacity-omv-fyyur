@@ -212,7 +212,13 @@ def venues():
         dataVenue = {}
         dataVenue["id"] = currentVenue.id
         dataVenue["name"] = currentVenue.name
-        dataVenue["num_upcoming_shows"] = 0
+        dataVenue["num_upcoming_shows"] =  \
+          Show.query.join(Venue).join(Artist)\
+            .filter(Show.venue_id == Venue.id)\
+            .filter(Show.artist_id == Artist.id)\
+            .filter(Show.venue_id == currentVenue.id)\
+            .filter(Show.start_time >= datetime.now())\
+            .count() 
         localVenues.append(dataVenue)
         print(" >>> venue agregado")
 
@@ -227,7 +233,7 @@ def venues():
   print(data2)
 
 
-  return render_template('pages/venues.html', areas=data2);
+  return render_template('pages/venues.html', areas=data2)
 
 
 @app.route('/venues/search', methods=['POST'])
@@ -260,7 +266,13 @@ def search_venues():
     content = {}
     content["id"] = venue.id
     content["name"] = venue.name
-    content["num_upcoming_shows"] = 0 # TODO: implementar
+    content["num_upcoming_shows"] = \
+      Show.query.join(Venue).join(Artist)\
+        .filter(Show.venue_id == Venue.id)\
+        .filter(Show.artist_id == Artist.id)\
+        .filter(Show.venue_id == venue.id)\
+        .filter(Show.start_time >= datetime.now())\
+        .count() 
     data.append(content)
   response["data"] = data
 
