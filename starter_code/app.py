@@ -92,7 +92,7 @@ class Show(db.Model):
   venue = db.relationship("Venue", back_populates="artists")
   
   def __repr__(self):
-    return f'<Show {self.id} {self.start_time} [v:{self.venue_id} a:{artist_id}]>'
+    return f'<Show {self.start_time} [v:{self.venue_id} a:{self.artist_id}]>'
 
 
 class VenueGenres(db.Model):
@@ -358,6 +358,24 @@ def show_venue(venue_id):
   for g in venue.genres:
     genres.append(g.genre)
 
+  query_shows = Show.query.join(Venue).join(Artist)\
+    .filter(Show.venue_id == Venue.id)\
+    .filter(Show.artist_id == Artist.id)\
+    .filter(Show.venue_id == venue_id)\
+    .filter(Show.start_time < datetime.now())\
+    .all() 
+
+  past_shows = getShowArtists(query_shows)
+
+  query_shows = Show.query.join(Venue).join(Artist)\
+    .filter(Show.venue_id == Venue.id)\
+    .filter(Show.artist_id == Artist.id)\
+    .filter(Show.venue_id == venue_id)\
+    .filter(Show.start_time >= datetime.now())\
+    .all()   
+
+  upcoming_shows = getShowArtists(query_shows)
+
   data["id"] = venue.id
   data["name"] = venue.name
   data["genres"] = genres
@@ -370,11 +388,11 @@ def show_venue(venue_id):
   data["facebook_link"] = venue.facebook_link
   data["seeking_talent"] = False # TODO: no está definido en clase venue, va en otro lado? [opcional]
   data["seeking_description"] = "" # TODO: no está definido en clase venue, va en otro lado? [opcional]
-  # TODO: implementar
-  data["past_shows"] = []
-  data["upcoming_shows"] = []
-  data["past_shows_count"] = 0
-  data["upcoming_shows_count"] = 0
+  
+  data["past_shows"] = past_shows
+  data["upcoming_shows"] = upcoming_shows
+  data["past_shows_count"] = len(past_shows)
+  data["upcoming_shows_count"] = len(upcoming_shows)
 
 
 
@@ -618,6 +636,25 @@ def show_artist(artist_id):
   for g in artist.genres:
     genres.append(g.genre)
 
+  query_shows = Show.query.join(Venue).join(Artist)\
+    .filter(Show.venue_id == Venue.id)\
+    .filter(Show.artist_id == Artist.id)\
+    .filter(Show.artist_id == artist_id)\
+    .filter(Show.start_time < datetime.now())\
+    .all() 
+
+  past_shows = getShowVenues(query_shows)
+
+  query_shows = Show.query.join(Venue).join(Artist)\
+    .filter(Show.venue_id == Venue.id)\
+    .filter(Show.artist_id == Artist.id)\
+    .filter(Show.artist_id == artist_id)\
+    .filter(Show.start_time >= datetime.now())\
+    .all()   
+
+  upcoming_shows = getShowVenues(query_shows)
+
+
   data["id"] = artist.id
   data["name"] = artist.name
   data["city"] = artist.city
@@ -629,12 +666,14 @@ def show_artist(artist_id):
   data["seeking_venue"] = False # TODO: no está definido en clase artist, va en otro lado? [campo opcional]
   data["seeking_description"] = "" # TODO: no está definido en clase artist, va en otro lado? [campo opcional]
   data["image_link"] = artist.image_link
-  # TODO: implementar
-  data["past_shows"] = []
-  data["upcoming_shows"] = []
-  data["past_shows_count"] = 0
-  data["upcoming_shows_count"] = 0
+  
+  data["past_shows"] = past_shows
+  data["upcoming_shows"] = upcoming_shows
+  data["past_shows_count"] = len(past_shows)
+  data["upcoming_shows_count"] = len(upcoming_shows)
 
+
+  print("Encontrado ", data) 
 
   return render_template('pages/show_artist.html', artist=data)
 
@@ -1064,6 +1103,40 @@ def not_found_error(error):
 @app.errorhandler(500)
 def server_error(error):
     return render_template('errors/500.html'), 500
+
+
+#----------------------------------------------------------------------------#
+# Auxiliars.
+#----------------------------------------------------------------------------#
+
+def getShowVenues(query_shows):
+  shows = []
+  for ps in query_shows:
+    content = {}
+    venue = Venue.query.get(ps.venue_id)
+
+    content["venue_id"] = venue.id
+    content["venue_name"] = venue.name
+    content["venue_image_link"] = venue.image_link
+    content["start_time"] = ps.start_time.isoformat()
+    shows.append(content)
+
+  return shows
+
+def getShowArtists(query_shows):
+  shows = []
+  for ps in query_shows:
+    content = {}
+    aritist = Artist.query.get(ps.artist_id)
+
+    content["artist_id"] = aritist.id
+    content["artist_name"] = aritist.name
+    content["artist_image_link"] = aritist.image_link
+    content["start_time"] = ps.start_time.isoformat()
+    shows.append(content)
+
+  return shows
+
 
 
 if not app.debug:
