@@ -45,10 +45,11 @@ class Venue(db.Model):
     website = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
-    genres = db.relationship('VenueGenres', backref='Venue', cascade='all, delete-orphan', lazy=True)
     
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
     # back_popultes Show.venue
+    website = db.Column(db.String(120))
+    genres = db.relationship('VenueGenres', backref='Venue', cascade='all, delete-orphan', lazy=True)
     artists = db.relationship("Show", back_populates="venue")
 
 
@@ -64,13 +65,14 @@ class Artist(db.Model):
     city = db.Column(db.String(120))
     state = db.Column(db.String(120))
     phone = db.Column(db.String(120))
-    website = db.Column(db.String(120))
-    genres = db.relationship('ArtistGenres', backref='Artist', cascade='all, delete-orphan', lazy=True)
+    #genres = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
     # back_popultes Show.artist
+    genres = db.relationship('ArtistGenres', backref='Artist', cascade='all, delete-orphan', lazy=True)
+    website = db.Column(db.String(120))
     venues = db.relationship("Show", back_populates="artist")
 
     def __repr__(self):
@@ -363,7 +365,7 @@ def show_venue(venue_id):
   data["city"] = venue.city
   data["state"] = venue.state
   data["phone"] = venue.phone
-  data["website"] = ""  # TODO: no está definido en clase venue, va en otro lado? [opcional]
+  data["website"] = venue.website
   data["image_link"] = venue.image_link
   data["facebook_link"] = venue.facebook_link
   data["seeking_talent"] = False # TODO: no está definido en clase venue, va en otro lado? [opcional]
@@ -406,7 +408,10 @@ def create_venue_submission():
     venue.address = request.form["address"]
     venue.state = request.form["state"]
     venue.phone = request.form["phone"]
-    #venue.image_link = request.form["image_link"]
+    if "image_link" in request.form:
+      venue.image_link = request.form["image_link"]
+    if "website" in request.form:
+      venue.website = request.form["website"]
     venue.facebook_link = request.form["facebook_link"]
     
     formGenres = request.form.getlist("genres")
@@ -618,8 +623,8 @@ def show_artist(artist_id):
   data["city"] = artist.city
   data["state"] = artist.state
   data["phone"] = artist.phone
-  data["website"] = "" # TODO: no está definido en clase artist, va en otro lado? [campo opcional]
-  data["genres"] = genres #[artist.genres[1:-1]]
+  data["website"] = artist.website 
+  data["genres"] = genres
   data["facebook_link"] = artist.facebook_link
   data["seeking_venue"] = False # TODO: no está definido en clase artist, va en otro lado? [campo opcional]
   data["seeking_description"] = "" # TODO: no está definido en clase artist, va en otro lado? [campo opcional]
@@ -677,7 +682,7 @@ def edit_artist(artist_id):
 
   form = ArtistForm()
   form.name.data = artist["name"]
-  form.genres.data = genres  # TODO: revisar
+  form.genres.data = genres 
   form.city.data = artist["city"]
   form.state.data = artist["state"]
   form.phone.data = artist["phone"]
@@ -707,8 +712,11 @@ def edit_artist_submission(artist_id):
     artist.city = request.form["city"]
     artist.state = request.form["state"]
     artist.phone = request.form["phone"]
-    #artist.image_link = request.form["image_link"]
     artist.facebook_link = request.form["facebook_link"]
+    if "image_link" in request.form:
+      artist.image_link = request.form["image_link"]
+    if "website" in request.form:
+      artist.website = request.form["website"]
 
     formGenres = request.form.getlist("genres")
     for genre in formGenres:
@@ -787,12 +795,12 @@ def edit_venue(venue_id):
 
   form = VenueForm()
   form.name.data = venue["name"]
-  form.genres.data = genres  # TODO: revisar
+  form.genres.data = genres  
   form.address.data = venue["address"]
   form.city.data = venue["city"]
   form.state.data = venue["state"]
   form.phone.data = venue["phone"]
-  #form.website.data = venue["website"]  
+  form.website.data = venue["website"]  
   form.facebook_link.data = venue["facebook_link"]
   form.image_link.data = venue["image_link"]
   #form.seeking_talent.data = venue["seeking_talent"]
@@ -820,8 +828,11 @@ def edit_venue_submission(venue_id):
     venue.state = request.form["state"]
     venue.phone = request.form["phone"]
     venue.address = request.form["address"]
-    #venue.image_link = request.form["image_link"]
     venue.facebook_link = request.form["facebook_link"]
+    if "image_link" in request.form:
+      venue.image_link = request.form["image_link"]
+    if "website" in request.form:
+      venue.website = request.form["website"]
 
     formGenres = request.form.getlist("genres")
     for genre in formGenres:
@@ -882,10 +893,13 @@ def create_artist_submission():
       city=request.form["city"],
       state=request.form["state"],
       phone=request.form["phone"],
-      #genres=request.form["genres"],
-      #image_link=request.form["name"],
       facebook_link=request.form["facebook_link"]
     )
+
+    if "image_link" in request.form:
+      artist.image_link = request.form["image_link"]
+    if "website" in request.form:
+      artist.website = request.form["website"]
 
     formGenres = request.form.getlist("genres")
     for genre in formGenres:

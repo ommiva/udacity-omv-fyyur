@@ -116,6 +116,9 @@ class VenueForm(FlaskForm):
     facebook_link = StringField(
         'facebook_link', validators=[URL()]
     )
+    website = StringField(
+        'website', validators=[Optional(), URL()]
+    )
 
 class ArtistForm(FlaskForm):
     name = StringField(
