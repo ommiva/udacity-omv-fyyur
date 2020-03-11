@@ -7,7 +7,9 @@
 			{{ artist.name }}
 		</h1>
 		<p class="subtitle">
-			ID: {{ artist.id }}
+			ID: {{ artist.id }} 
+			<button id="artist-edit" data-id="{{ artist.id }}" title="Edit" style="margin-left:15px; padding: 1px 8px; ">Edit</button> 
+			<button id="artist-delete" data-id="{{ artist.id }}" title="Delete" style="margin-left:15px; padding: 1px 8px; background-color:#F44336; border-color: #C62828; color:#fff;">&cross;</button>
 		</p>
 		<div class="genres">
 			{% for genre in artist.genres %}
@@ -74,5 +76,30 @@
 	</div>
 </section>
 
+<script>
+	document.getElementById('artist-edit').onclick = function(e) {
+		console.log('click editar');
+		const artistId = e.target.dataset['id'];
+		window.location = '/artists/' + artistId + '/edit';
+	}
+
+	document.getElementById('artist-delete').onclick = function(e) {
+		const artistId = e.target.dataset['id'];
+		console.log("click " + artistId);
+
+		fetch('/artists/'+artistId, {
+			method: 'DELETE'
+		})
+		.then(function() {
+			let redirectTo = '/artists'
+			console.log('borrado, regresanto a ' + redirectTo);
+			window.location=redirectTo
+		})
+		.catch(function(err) {
+			console.log(err);
+		});
+	}
+
+</script>
 {% endblock %}
 

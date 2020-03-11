@@ -8,6 +8,8 @@
 		</h1>
 		<p class="subtitle">
 			ID: {{ venue.id }}
+			<button id="venue-edit" data-id="{{ venue.id }}" title="Edit" style="margin-left:15px; padding: 1px 8px; ">Edit</button> 
+			<button id="venue-delete" data-id="{{ venue.id }}" title="Delete" style="margin-left:15px; padding: 1px 8px; background-color:#F44336; border-color: #C62828; color:#fff;">&cross;</button>
 		</p>
 		<div class="genres">
 			{% for genre in venue.genres %}
@@ -76,6 +78,33 @@
 		{% endfor %}
 	</div>
 </section>
+
+<script>
+	document.getElementById('venue-edit').onclick = function(e) {
+		console.log('click editar');
+		const venueId = e.target.dataset['id'];
+		window.location = '/venues/' + venueId + '/edit';
+	}
+
+
+	document.getElementById('venue-delete').onclick = function(e) {
+		const venueId = e.target.dataset['id'];
+		console.log("click " + venueId);
+
+		fetch('/venues/'+venueId, {
+			method: 'DELETE'
+		})
+		.then(function() {
+			let redirectTo = '/'
+			console.log('borrado, regresanto a ' + redirectTo);
+			window.location=redirectTo
+		})
+		.catch(function(err) {
+			console.log(err);
+		});
+	}
+
+</script>
 
 {% endblock %}
 

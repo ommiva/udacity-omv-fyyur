@@ -1,3 +1,9 @@
 h1 {
 	margin-bottom: 1em;
 }
+
+#artist-delete {
+	margin-left:15px; 
+	padding: 1px 8px; 
+	color:#B71C1C;
+}
