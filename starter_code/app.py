@@ -957,8 +957,11 @@ def create_artist_submission():
   # modify data to be the data object returned from db insertion
 
   form = ArtistForm(request.form)
+  print("Forma ", form )
+  print("Forma R ", request.form )
    
-  if request.method == 'POST' and form.validate_on_submit(): 
+  #if request.method == 'POST' and form.validate_on_submit(): # igual q liena siguiente
+  if form.validate_on_submit(): 
     
     artist = Artist(
       name=request.form["name"],
@@ -999,12 +1002,13 @@ def create_artist_submission():
       db.session.rollback()
       flash('An error occurred. Artist ' + artist.name + ' could not be listed.')
       print('Error: Artista no creado')
+      print(sys.exc_info())
     finally: 
       db.session.close()
     
   else:
     flash('An error occurred. Artist ' + request.form["name"] + ' failed (validation error).')
-    print('Errror: forma no válida')
+    print('Errror: forma no válida', form.errors) 
 
   # on successful db insert, flash success
   # flash('Artist ' + request.form['name'] + ' was successfully listed!')

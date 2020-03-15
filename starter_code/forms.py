@@ -1,7 +1,31 @@
 from datetime import datetime
 from flask_wtf import Form, FlaskForm
 from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField
-from wtforms.validators import DataRequired, AnyOf, URL, Optional, Regexp
+from wtforms.validators import DataRequired, AnyOf, URL, Optional, Regexp, ValidationError
+from enum import Enum, auto
+
+genre_choices = [
+            ('Alternative', 'Alternative'),
+            ('Blues', 'Blues'),
+            ('Classical', 'Classical'),
+            ('Country', 'Country'),
+            ('Electronic', 'Electronic'),
+            ('Folk', 'Folk'),
+            ('Funk', 'Funk'),
+            ('Hip-Hop', 'Hip-Hop'),
+            ('Heavy Metal', 'Heavy Metal'),
+            ('Instrumental', 'Instrumental'),
+            ('Jazz', 'Jazz'),
+            ('Musical Theatre', 'Musical Theatre'),
+            ('Pop', 'Pop'),
+            ('Punk', 'Punk'),
+            ('R&B', 'R&B'),
+            ('Reggae', 'Reggae'),
+            ('Rock n Roll', 'Rock n Roll'),
+            ('Soul', 'Soul'),
+            ('Other', 'Other'),
+        ]
+
 
 class ShowForm(FlaskForm):
     artist_id = StringField(
@@ -89,29 +113,8 @@ class VenueForm(FlaskForm):
         'image_link', validators=[Optional(), URL()]
     )
     genres = SelectMultipleField(
-        # TODO implement enum restriction
         'genres', validators=[DataRequired()],
-        choices=[
-            ('Alternative', 'Alternative'),
-            ('Blues', 'Blues'),
-            ('Classical', 'Classical'),
-            ('Country', 'Country'),
-            ('Electronic', 'Electronic'),
-            ('Folk', 'Folk'),
-            ('Funk', 'Funk'),
-            ('Hip-Hop', 'Hip-Hop'),
-            ('Heavy Metal', 'Heavy Metal'),
-            ('Instrumental', 'Instrumental'),
-            ('Jazz', 'Jazz'),
-            ('Musical Theatre', 'Musical Theatre'),
-            ('Pop', 'Pop'),
-            ('Punk', 'Punk'),
-            ('R&B', 'R&B'),
-            ('Reggae', 'Reggae'),
-            ('Rock n Roll', 'Rock n Roll'),
-            ('Soul', 'Soul'),
-            ('Other', 'Other'),
-        ]
+        choices=genre_choices
     )
     facebook_link = StringField(
         'facebook_link', validators=[URL()]
@@ -119,6 +122,14 @@ class VenueForm(FlaskForm):
     website = StringField(
         'website', validators=[Optional(), URL()]
     )
+
+    def validate_genres(form, field):
+        choice_values = [choice[1] for choice in genre_choices]
+        for genre in field.data:
+            if genre not in choice_values:
+                raise ValidationError("Not a selectable genre")
+
+
 
 class ArtistForm(FlaskForm):
     name = StringField(
@@ -191,29 +202,8 @@ class ArtistForm(FlaskForm):
         'image_link', validators=[Optional(), URL()]
     )
     genres = SelectMultipleField(
-        # TODO implement enum restriction
         'genres', validators=[DataRequired()],
-        choices=[
-            ('Alternative', 'Alternative'),
-            ('Blues', 'Blues'),
-            ('Classical', 'Classical'),
-            ('Country', 'Country'),
-            ('Electronic', 'Electronic'),
-            ('Folk', 'Folk'),
-            ('Funk', 'Funk'),
-            ('Hip-Hop', 'Hip-Hop'),
-            ('Heavy Metal', 'Heavy Metal'),
-            ('Instrumental', 'Instrumental'),
-            ('Jazz', 'Jazz'),
-            ('Musical Theatre', 'Musical Theatre'),
-            ('Pop', 'Pop'),
-            ('Punk', 'Punk'),
-            ('R&B', 'R&B'),
-            ('Reggae', 'Reggae'),
-            ('Rock n Roll', 'Rock n Roll'),
-            ('Soul', 'Soul'),
-            ('Other', 'Other'),
-        ]
+        choices=genre_choices
     )
     facebook_link = StringField(
         # TODO implement enum restriction
@@ -223,4 +213,23 @@ class ArtistForm(FlaskForm):
         'website', validators=[Optional(), URL()]
     )
 
+    def validate_genres(form, field):
+        """
+            Validación personalizada
+            validate_[campo a validar]
+        """
+        # valores (choice[1]) enocntrados del diccionario genre_choices
+        choice_values = [choice[1] for choice in genre_choices]
+        for genre in field.data:
+            if genre not in choice_values:
+                raise ValidationError("Not a selectable genre")
+        
+
+    def __repr__(self):
+        return f"<ArtistForm '{self.name.data}' {self.city.data} {self.state.data} {self.phone.data} {self.image_link.data} {self.genres.data} {self.facebook_link.data} >"
+
 # TODO IMPLEMENT NEW ARTIST FORM AND NEW SHOW FORM
+
+
+
+        
