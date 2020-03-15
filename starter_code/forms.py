@@ -219,6 +219,10 @@ class ArtistForm(FlaskForm):
             validate_[campo a validar]
         """
         # valores (choice[1]) enocntrados del diccionario genre_choices
+
+        # https://www.youtube.com/watch?v=TZvb1Wurj7w
+        #   https://www.google.com/search?ei=ZottXsb8BMPAsQWxv67ACQ&q=flask+wtf+custom+validation&oq=flask+form+validation+custom&gs_l=psy-ab.3.1.0i22i30l2.10370.11604..14574...0.3..0.118.624.2j4......0....1..gws-wiz.......0i71.RtKLcnM7nSg#kpvalbx=_05JtXsSGIKGltgXjuK2wAg24
+        # https://github.com/Louis95/fyyur-Artist-Booking-Site/blob/master/forms.py
         choice_values = [choice[1] for choice in genre_choices]
         for genre in field.data:
             if genre not in choice_values:
